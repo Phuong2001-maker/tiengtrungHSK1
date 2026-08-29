@@ -2,12 +2,27 @@
    Bài tập: danh sách · S-17 Tạo & giao · S-18 Bài đã nộp · S-19 Chấm bài
    ========================================================================== */
 
+/* Lọc bảng theo chip — nay chỉ còn màn S-18 dùng, nên để ngay tại đây. */
+function filterBar(root) {
+  var bar = UI.qs("#fBar", root); if (!bar) return;
+  UI.qsa(".chip", bar).forEach(function (c) {
+    c.onclick = function () {
+      UI.qsa(".chip", bar).forEach(function (x) { x.classList.remove("on"); });
+      c.classList.add("on");
+      var f = c.getAttribute("data-f");
+      UI.qsa("tbody tr", root).forEach(function (tr) {
+        tr.style.display = (f === "all" || tr.getAttribute("data-f") === f) ? "" : "none";
+      });
+    };
+  });
+}
+
 /* ---------------------------------------------- danh sách bài tập (điều hướng) */
 ROUTES["admin/bai-tap"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function () {
     var u = Store.me();
-    var ks = u.role === "admin" ? Store.s.classes : Store.classesOfTeacher(u.id);
+    var ks = Store.classesOfTeacher(u.id);
     var kid = {}; ks.forEach(function (k) { kid[k.id] = 1; });
     var list = Store.s.assignments.filter(function (a) { return kid[a.classId]; });
 
@@ -15,7 +30,7 @@ ROUTES["admin/bai-tap"] = {
       var k = Store.cls(a.classId), subs = Store.subsOf(a.id);
       var graded = subs.filter(function (s) { return s.finalScore !== null; }).length;
       var d = dueInfo(a.due);
-      return '<tr data-f="' + a.status + '"><td><div class="b">' + UI.h(a.title) + '</div>' +
+      return '<tr><td><div class="b">' + UI.h(a.title) + '</div>' +
         '<div class="xs muted">' + a.questions.length + ' câu · thang ' + a.maxScore + ' · ' + UI.h(a.kind) + '</div></td>' +
         '<td>' + UI.chip(k.code, "blue") + '</td>' +
         '<td class="sm">' + UI.h(a.due) + '<div class="xs ' + (d.cls === "red" ? "red b" : "muted") + '">' + d.text + '</div></td>' +
@@ -26,22 +41,16 @@ ROUTES["admin/bai-tap"] = {
           ' sm" href="#/admin/bai-tap/' + a.id + '/nop">' + (subs.length > graded ? "Chấm bài" : "Xem bài nộp") + '</a></td></tr>';
     });
 
-    var body = '<div class="row wrap mb" id="fBar">' +
-      '<span class="chip btn-like on" data-f="all">Tất cả (' + list.length + ')</span>' +
-      '<span class="chip btn-like" data-f="open">Đang mở (' + list.filter(function (a) { return a.status === "open"; }).length + ')</span>' +
-      '<span class="chip btn-like" data-f="closed">Đã đóng (' + list.filter(function (a) { return a.status === "closed"; }).length + ')</span>' +
-      '</div>' +
-      UI.table(["Bài tập", "Lớp", "Hạn nộp", "Đã nộp", "Đã chấm", "Trạng thái", ""], rows, 880);
+    var body = UI.table(["Bài tập", "Lớp", "Hạn nộp", "Đã nộp", "Đã chấm", "Trạng thái", ""], rows, 880);
 
-    return UI.shell({ active: "#/admin/bai-tap", title: "Bài tập", crumb: "Quản trị",
+    return UI.shell({ active: "#/admin/bai-tap", title: "Bài tập", crumb: "Quản lý",
       actions: '<a href="#/admin/bai-tap/moi" class="btn red sm">＋ Tạo bài tập</a>', body: body });
-  },
-  init: function (root) { filterBar(root); }
+  }
 };
 
 /* ---------------------------------------------- danh sách bài cần chấm */
 ROUTES["admin/cham"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function () {
     var pend = pendingList(Store.me());
     var rows = pend.map(function (x) {
@@ -56,7 +65,7 @@ ROUTES["admin/cham"] = {
     });
     var body = (pend.length ? "" : '<div class="mb">' + UI.alert("jade", "🎉", "Bạn đã chấm hết bài. Không còn gì chờ xử lý.") + '</div>') +
       UI.table(["", "Học viên", "Bài tập", "Nộp lúc", "Trạng thái", "Điểm tự động", ""], rows, 820);
-    return UI.shell({ active: "#/admin/cham", title: "Bài cần chấm", crumb: "Quản trị", body: body });
+    return UI.shell({ active: "#/admin/cham", title: "Bài cần chấm", crumb: "Quản lý", body: body });
   }
 };
 
@@ -66,10 +75,10 @@ var NEW_K = null;    /* lớp được chọn */
 var NEW_SKIP = {};   /* học viên bị bỏ chọn */
 
 ROUTES["admin/bai-tap/moi"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function (p) {
     var u = Store.me();
-    var ks = u.role === "admin" ? Store.s.classes : Store.classesOfTeacher(u.id);
+    var ks = Store.classesOfTeacher(u.id);
     if (!NEW_K) NEW_K = (p.k && Store.cls(p.k)) ? p.k : (ks[0] ? ks[0].id : null);
     var k = NEW_K ? Store.cls(NEW_K) : null;
     var cs = Store.myCourses();
@@ -148,7 +157,6 @@ ROUTES["admin/bai-tap/moi"] = {
 
       '<div class="row mt2 wrap"><a class="btn ghost" href="#/admin/bai-tap">Huỷ</a>' +
         '<span class="right row wrap"><button class="btn ghost" id="atPreview">👁 Xem thử như học viên</button>' +
-        '<button class="btn ghost" id="atDraft">💾 Lưu nháp</button>' +
         '<button class="btn red lg" id="atSend">🚀 Giao bài cho ' + recv.length + ' học viên</button></span></div>' +
     '</div>' +
     '<div><div class="card pad" style="position:sticky;top:80px"><b style="font-size:15px">Tóm tắt</b>' +
@@ -162,7 +170,7 @@ ROUTES["admin/bai-tap/moi"] = {
       '<div class="mt">' + UI.alert("blue", "🤖", '<span class="sm">' + autoN + ' câu tự động chấm sẽ có điểm ngay khi học viên nộp. Bạn chỉ cần chấm tay ' + (NEW_Q.length - autoN) + ' câu.</span>') + '</div>' +
     '</div></div></div>';
 
-    return UI.shell({ active: "#/admin/bai-tap", title: "Tạo bài tập mới", crumb: "Quản trị · Bài tập", body: body });
+    return UI.shell({ active: "#/admin/bai-tap", title: "Tạo bài tập mới", crumb: "Quản lý · Bài tập", body: body });
   },
 
   init: function (root) {
@@ -238,7 +246,6 @@ ROUTES["admin/bai-tap/moi"] = {
         footer: '<button class="btn ghost" data-close>Đóng</button>' });
     };
 
-    UI.qs("#atDraft", root).onclick = function () { UI.toast("Đã lưu bản nháp bài tập.", "ok"); };
 
     UI.qs("#atSend", root).onclick = function () {
       var k = Store.cls(NEW_K);
@@ -346,7 +353,7 @@ function addQuestion(type) {
 
 /* ====================================================== S-18 BÀI ĐÃ NỘP */
 ROUTES["admin/bai-tap/:aid/nop"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function (p) {
     var a = Store.asg(p.aid);
     if (!a) return UI.shell({ active: "#/admin/bai-tap", title: "Không tìm thấy", crumb: "", body: '<div class="empty">Bài tập không tồn tại.</div>' });
@@ -408,7 +415,7 @@ ROUTES["admin/bai-tap/:aid/nop"] = {
           return 'Câu ' + i + ' — ' + x.q.q + ' <b>(' + x.n + '/' + nSub + ' em sai)</b>';
         }).join(' · ') + '. Nên nhắc lại ở buổi tới.') + '</div>' : '');
 
-    return UI.shell({ active: "#/admin/bai-tap", title: a.title, crumb: "Quản trị · Bài tập · Lớp " + k.code,
+    return UI.shell({ active: "#/admin/bai-tap", title: a.title, crumb: "Quản lý · Bài tập · Lớp " + k.code,
       actions: '<a class="btn ghost sm" href="#/admin/bai-tap/moi">✏️ Tạo bài mới</a>', body: body });
   },
   init: function (root, p) {
@@ -434,7 +441,7 @@ ROUTES["admin/bai-tap/:aid/nop"] = {
 
 /* ====================================================== S-19 CHẤM BÀI */
 ROUTES["admin/cham/:aid/:uid"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function (p) {
     var a = Store.asg(p.aid), stu = Store.user(p.uid);
     if (!a || !stu) return UI.shell({ active: "#/admin/cham", title: "Không tìm thấy", crumb: "", body: '<div class="empty">Không có dữ liệu.</div>' });
@@ -541,7 +548,7 @@ ROUTES["admin/cham/:aid/:uid"] = {
       '</div></div></div>';
 
     return UI.shell({ active: "#/admin/cham", title: "Chấm bài — " + stu.name,
-      crumb: "Quản trị · " + a.title + " · Lớp " + k.code, body: body });
+      crumb: "Quản lý · " + a.title + " · Lớp " + k.code, body: body });
   },
 
   init: function (root, p) {

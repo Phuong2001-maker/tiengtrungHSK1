@@ -2,7 +2,7 @@
    store.js — trạng thái ứng dụng, đăng nhập, lưu vào localStorage
    ========================================================================== */
 var Store = (function () {
-  var KEY = "hanzi_lms_v1";
+  var KEY = "hanzi_lms_v2";   // v1 còn vai trò quản trị — đổi khoá để nạp lại dữ liệu mẫu
   var MEM = null;             // dự phòng khi localStorage bị chặn
   var canLS = true;
 
@@ -82,13 +82,11 @@ var Store = (function () {
   /* lớp mà người dùng hiện tại được phép thấy */
   function myClasses() {
     var u = me(); if (!u) return [];
-    if (u.role === "admin") return S.classes.slice();
     if (u.role === "gv") return classesOfTeacher(u.id);
     return classesOfStudent(u.id);
   }
   function myCourses() {
     var u = me(); if (!u) return [];
-    if (u.role === "admin") return S.courses.slice();
     if (u.role === "gv") {
       var own = {};
       S.courses.forEach(function (c) { if (c.teacherId === u.id) own[c.id] = 1; });
@@ -97,7 +95,7 @@ var Store = (function () {
     }
     var ids = {};
     classesOfStudent(u.id).forEach(function (k) { ids[k.courseId] = 1; });
-    return S.courses.filter(function (c) { return ids[c.id] && c.status === "pub"; });
+    return S.courses.filter(function (c) { return ids[c.id]; });
   }
 
   function asgOfClass(kid) { return S.assignments.filter(function (a) { return a.classId === kid; }); }
@@ -153,7 +151,7 @@ var Store = (function () {
     if (n > cur) { S.progress[u.id][lid] = n; save(); }
   }
   function courseProg(uid, cid) {
-    var ls = lessonsOf(cid).filter(function (l) { return l.status === "pub"; });
+    var ls = lessonsOf(cid);
     if (!ls.length) return 0;
     var t = ls.reduce(function (s, l) { return s + prog(uid, l.id); }, 0);
     return Math.round(t / (ls.length * 5) * 100);

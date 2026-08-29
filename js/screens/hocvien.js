@@ -36,7 +36,7 @@ ROUTES["hv"] = {
     var ks = Store.classesOfStudent(u.id);
     var k = ks[0];
     var course = k ? Store.course(k.courseId) : null;
-    var lessons = course ? Store.lessonsOf(course.id).filter(function (l) { return l.status === "pub"; }) : [];
+    var lessons = course ? Store.lessonsOf(course.id) : [];
     var doneN = lessons.filter(function (l) { return Store.prog(u.id, l.id) >= 5; }).length;
     var cur = lessons.filter(function (l) { return Store.prog(u.id, l.id) < 5; })[0] || lessons[0];
     var todo = Store.asgOfStudent(u.id).filter(function (a) {
@@ -137,10 +137,9 @@ ROUTES["hv/giao-trinh/:cid"] = {
     var u = Store.me(), c = Store.course(p.cid);
     if (!c) return UI.shell({ active: "#/hv/giao-trinh", title: "Không tìm thấy", crumb: "", body: '<div class="empty">Giáo trình không tồn tại.</div>' });
     var ls = Store.lessonsOf(c.id);
-    var pub = ls.filter(function (l) { return l.status === "pub"; });
-    var doneN = pub.filter(function (l) { return Store.prog(u.id, l.id) >= 5; }).length;
+    var doneN = ls.filter(function (l) { return Store.prog(u.id, l.id) >= 5; }).length;
     var nums = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
-    var totalW = pub.reduce(function (s, l) { return s + l.vocab.length; }, 0);
+    var totalW = ls.reduce(function (s, l) { return s + l.vocab.length; }, 0);
 
     var body = '<div class="hero" data-bg="' + UI.h(c.zh.split(" ")[0]) + '">' +
       '<div class="row">' + UI.chip(c.level + " · " + ls.length + " BÀI", "chip-w") + '</div>' +
@@ -148,19 +147,17 @@ ROUTES["hv/giao-trinh/:cid"] = {
       '<h2 style="font-size:19px;font-weight:600">' + UI.h(c.vi) + '</h2>' +
       '<p>' + UI.h(c.desc) + '</p>' +
       '<div class="mrow"><span>' + c.emo + ' ' + ls.length + ' bài học</span><span>🎯 ' + totalW + ' từ vựng</span>' +
-        '<span>👩‍🏫 ' + UI.h(Store.user(c.teacherId).name) + '</span><span>✅ Bạn đã xong ' + doneN + '/' + pub.length + '</span></div></div>' +
+        '<span>👩‍🏫 ' + UI.h(Store.user(c.teacherId).name) + '</span><span>✅ Bạn đã xong ' + doneN + '/' + ls.length + '</span></div></div>' +
 
     '<div class="row mt2 wrap"><span class="chip jade">Tất cả (' + ls.length + ')</span>' +
       '<span class="chip">Đã học (' + doneN + ')</span>' +
-      '<span class="chip">Chưa mở (' + (ls.length - pub.length) + ')</span>' +
       '<span class="right sm muted">Tiến độ giáo trình</span><b class="sm">' + Store.courseProg(u.id, c.id) + '%</b>' +
       '<span style="width:120px">' + UI.bar(Store.courseProg(u.id, c.id)) + '</span></div>' +
 
     '<div class="grid mt" style="gap:12px">' + ls.map(function (l) {
       var pr = Store.prog(u.id, l.id), pct = Math.round(pr / 5 * 100);
-      var locked = l.status !== "pub";
-      var cls = locked ? "lock" : (pr >= 5 ? "done" : "");
-      var stc = locked ? ["grey", "🔒 Chưa mở"] : pr >= 5 ? ["jade", "✓ Đã học"] : pr > 0 ? ["red", "● Đang học"] : ["", "Chưa bắt đầu"];
+      var cls = pr >= 5 ? "done" : "";
+      var stc = pr >= 5 ? ["jade", "✓ Đã học"] : pr > 0 ? ["red", "● Đang học"] : ["", "Chưa bắt đầu"];
       return '<div class="lcard ' + cls + '">' +
         '<div class="no zh">' + (nums[l.no - 1] || l.no) + '</div>' +
         '<div class="grow"><div class="zh-t">' + UI.h(l.zh) + '</div>' +
@@ -169,9 +166,8 @@ ROUTES["hv/giao-trinh/:cid"] = {
           UI.chip("💬 " + l.dialogues.length + " hội thoại") + UI.chip(stc[1], stc[0]) + '</div></div>' +
         '<div style="width:130px;text-align:right"><div class="sm b" style="margin-bottom:5px">' + pct + '%</div>' +
           UI.bar(pct, pr > 0 && pr < 5 ? "gold" : "") + '</div>' +
-        (locked ? '<button class="btn ghost sm" disabled>Chưa mở</button>'
-                : '<a href="#/hoc/' + l.id + '" class="btn ' + (pr > 0 && pr < 5 ? "red" : "ghost") + ' sm">' +
-                  (pr >= 5 ? "Xem lại" : pr > 0 ? "▶ Học tiếp" : "▶ Bắt đầu") + '</a>') +
+        '<a href="#/hoc/' + l.id + '" class="btn ' + (pr > 0 && pr < 5 ? "red" : "ghost") + ' sm">' +
+          (pr >= 5 ? "Xem lại" : pr > 0 ? "▶ Học tiếp" : "▶ Bắt đầu") + '</a>' +
       '</div>';
     }).join('') + '</div>';
 

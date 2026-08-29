@@ -1,7 +1,7 @@
 # HanZi LMS — phần mềm dạy và học tiếng Trung
 
 Bản dựng **giao diện** theo tài liệu `thiet-ke/HanZi-LMS-Thiet-ke-giao-dien.docx`.
-Đủ 20 màn hình, 3 vai trò đăng nhập, dữ liệu mẫu có sẵn.
+Đủ 19 màn hình, 2 vai trò đăng nhập, dữ liệu mẫu có sẵn.
 
 Chỉ có phần chạy trong trình duyệt — **không có máy chủ, không có cơ sở dữ liệu**.
 Mọi thay đổi được lưu vào `localStorage` của chính trình duyệt bạn đang dùng.
@@ -22,22 +22,31 @@ rồi mở <http://127.0.0.1:8137/phan-mem/>
 
 ---
 
-## Ba tài khoản đăng nhập
+## Hai tài khoản đăng nhập
 
 Mật khẩu chung: **123456**
 
 | Vai trò | Email | Vào được những gì |
 |---|---|---|
 | Học viên | `hv@hanzi.vn` | Học 5 phần của bài · làm và nộp bài tập · xem điểm và ghi chú riêng của mình |
-| Giáo viên | `gv@hanzi.vn` | Mọi quyền học viên + trình chiếu slide + khu quản trị (giáo trình, lớp, bài tập, chấm bài) trong phạm vi lớp mình phụ trách |
-| Quản trị | `admin@hanzi.vn` | Toàn quyền giáo viên trên mọi lớp + quản lý người dùng, phân vai trò, cấu hình |
+| Giáo viên | `gv@hanzi.vn` | Mọi quyền học viên + trình chiếu slide + khu quản lý: giáo trình, lớp, bài tập, chấm bài **trong phạm vi lớp mình phụ trách**, cùng danh sách người dùng và cấu hình dùng chung cả trung tâm |
 
-Ở màn đăng nhập có 3 nút bấm là vào thẳng, không cần gõ.
+Không có vai trò quản trị riêng — giáo viên tự tạo và khoá tài khoản học viên.
+Dữ liệu mẫu có sẵn hai giáo viên: `gv@hanzi.vn` (cô Lan, 3 lớp) và
+`dat.pham@hanzi.vn` (thầy Đạt, 2 lớp) — đăng nhập chéo để thấy mỗi người
+chỉ nhìn được lớp của mình.
+
+**Không có trạng thái bản nháp.** Giáo trình và bài học vừa tạo là dùng được ngay,
+học viên nhìn thấy luôn. Không có bước "xuất bản", không khoá bài nào lại.
+Riêng bài làm của học viên và phần chấm dở của giáo viên thì vẫn lưu nháp được —
+đó là lưu dở dang công việc, không phải trạng thái xuất bản.
+
+Màn đăng nhập không còn nút bấm nhanh — gõ email và mật khẩu như bình thường.
 Các tài khoản học viên khác (`ha.pham@gmail.com`, `minh.vu@gmail.com`, …) cũng dùng mật khẩu `123456`.
 
 ---
 
-## 20 màn hình
+## 19 màn hình
 
 | Mã | Màn hình | Địa chỉ |
 |---|---|---|
@@ -51,7 +60,6 @@ Các tài khoản học viên khác (`ha.pham@gmail.com`, `minh.vu@gmail.com`, �
 | S-08 | Làm bài và nộp bài | `#/hv/lam-bai/a1` |
 | S-09 | Kết quả và ghi chú của giáo viên | `#/hv/ket-qua/a1` |
 | S-10 | Bảng điều khiển giáo viên | `#/gv` |
-| S-11 | Tổng quan quản trị | `#/admin` |
 | S-12 | Danh sách giáo trình | `#/admin/giao-trinh` |
 | S-13 | Thông tin giáo trình | `#/admin/giao-trinh/c1` |
 | S-14 | Soạn bài học | `#/admin/soan-bai/l3` |
@@ -61,6 +69,13 @@ Các tài khoản học viên khác (`ha.pham@gmail.com`, `minh.vu@gmail.com`, �
 | S-18 | Danh sách bài đã nộp | `#/admin/bai-tap/a1/nop` |
 | S-19 | Chấm bài và ghi chú riêng | `#/admin/cham/a1/u3` |
 | S-20 | Quản lý người dùng | `#/admin/nguoi-dung` |
+
+Bảng nhảy từ S-10 sang S-12: màn **S-11 Tổng quan quản trị** đã bị xoá cùng vai trò
+quản trị, phần thống kê và dòng hoạt động của nó gộp vào bảng điều khiển giáo viên (S-10).
+Mã số các màn còn lại giữ nguyên để khớp với tài liệu thiết kế trong `thiet-ke/`.
+
+Địa chỉ vẫn giữ tiền tố `#/admin/…` cho khỏi phải sửa mọi liên kết; đó chỉ là
+tên đường dẫn, không còn vai trò quản trị nào đứng sau.
 
 ---
 
@@ -96,7 +111,7 @@ phan-mem/
       hocvien.js          S-03, S-04, S-07, S-09
       hocbai.js           S-05 (5 phần), S-06
       lambai.js           S-08
-      giaovien.js         S-10, S-11
+      giaovien.js         S-10
       admin-giaotrinh.js  S-12, S-13, S-14
       admin-lop.js        S-15, S-16
       admin-baitap.js     S-17, S-18, S-19
@@ -111,7 +126,7 @@ Một tuyến có dạng:
 
 ```js
 ROUTES["admin/lop/:kid"] = {
-  roles: ["gv", "admin"],              // bỏ trống = ai đăng nhập cũng vào được
+  roles: ["gv"],                       // bỏ trống = ai đăng nhập cũng vào được
   view: function (p) { return UI.shell({ … }); },   // p.kid là tham số trên địa chỉ
   init: function (root, p) { … }       // gắn sự kiện sau khi vẽ xong
 };
@@ -127,8 +142,9 @@ ROUTES["admin/lop/:kid"] = {
 - Làm bài 7 dạng câu, tự lưu nháp 20 giây/lần, đếm ngược, nộp bài, chấm tự động.
 - Giáo viên chấm tay, nhận xét từng câu, chọn phần chưa đạt, gửi ghi chú riêng —
   học viên nhận thông báo và chỉ thấy ghi chú của chính mình.
-- Tạo giáo trình, soạn bài (5 tab, có xem trước trực tiếp), tạo lớp, thêm học viên,
-  tạo và giao bài tập cho lớp, quản lý người dùng.
+- Tạo giáo trình, soạn bài (5 tab, có xem trước trực tiếp), sửa lại bài đã thêm,
+  đổi thứ tự bài, tạo lớp, thêm học viên, tạo và giao bài tập cho lớp, quản lý học viên.
+  Mọi thứ vừa tạo là học viên thấy ngay, không qua bước duyệt hay xuất bản.
 
 ## Những gì chỉ là giao diện
 
@@ -143,5 +159,5 @@ ROUTES["admin/lop/:kid"] = {
 
 ## Nạp lại dữ liệu mẫu
 
-Đăng nhập bằng tài khoản quản trị → `#/admin/caidat` → **🔄 Nạp lại dữ liệu mẫu**.
+Đăng nhập bằng tài khoản giáo viên → `#/admin/caidat` → **🔄 Nạp lại dữ liệu mẫu**.
 Hoặc mở Console của trình duyệt và chạy `Store.reset(); location.reload()`.

@@ -422,7 +422,7 @@ ROUTES["hoc/:lid/:tab"] = { full: true, view: lessonView, init: lessonInit };
 
 /* ====================================================== S-06 TRÌNH CHIẾU */
 ROUTES["trinh-chieu/:lid"] = {
-  full: true, roles: ["gv", "admin"],
+  full: true, roles: ["gv"],
   view: function (p) {
     var l = Store.lesson(p.lid);
     if (!l || !l.vocab.length) return '<div class="empty" style="padding:80px">Bài học chưa có nội dung. <a href="#/gv" class="red b">Quay lại</a></div>';

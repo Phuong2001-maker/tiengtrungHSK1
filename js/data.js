@@ -5,11 +5,9 @@
 var SEED = {};
 
 /* ---------------------------------------------------------------- NGƯỜI DÙNG
-   3 tài khoản đăng nhập chính — mật khẩu đều là 123456
+   2 tài khoản đăng nhập chính — mật khẩu đều là 123456
    -------------------------------------------------------------------------- */
 SEED.users = [
-  { id:"u1",  email:"admin@hanzi.vn", pass:"123456", name:"Nguyễn Minh Anh", role:"admin",
-    ini:"MA", color:"#8B5CF6", phone:"0901 234 567", active:true,  last:"Hôm nay 08:12" },
   { id:"u2",  email:"gv@hanzi.vn",    pass:"123456", name:"Trần Thị Lan",    role:"gv",
     ini:"TL", color:"#D6453D", phone:"0902 345 678", active:true,  last:"Hôm nay 07:45" },
   { id:"u3",  email:"hv@hanzi.vn",    pass:"123456", name:"Lê Hoàng Nam",    role:"hv",
@@ -33,16 +31,16 @@ SEED.users = [
 /* ---------------------------------------------------------------- GIÁO TRÌNH */
 SEED.courses = [
   { id:"c1", code:"HSK1-GT", zh:"汉语教程 · 第一册", vi:"Hán ngữ giao tiếp — Tập 1", level:"HSK 1",
-    emo:"📗", color:"#D6453D", teacherId:"u2", status:"pub", updated:"20/08/2026",
+    emo:"📗", color:"#D6453D", teacherId:"u2", updated:"20/08/2026",
     desc:"Giáo trình nhập môn theo phong cách 《汉语教程》: mỗi bài gồm 5 phần — khởi động, từ mới, ôn tập, ngữ pháp và hội thoại." },
   { id:"c2", code:"HSK2-GT", zh:"汉语教程 · 第二册", vi:"Hán ngữ giao tiếp — Tập 2", level:"HSK 2",
-    emo:"📘", color:"#3B6FD4", teacherId:"u2", status:"pub", updated:"14/08/2026",
+    emo:"📘", color:"#3B6FD4", teacherId:"u2", updated:"14/08/2026",
     desc:"Tiếp nối tập 1, mở rộng chủ đề mua sắm, thời gian, sức khoẻ và du lịch." },
   { id:"c3", code:"CS-01", zh:"商务汉语", vi:"Tiếng Trung công sở", level:"HSK 3",
-    emo:"📙", color:"#E9A23B", teacherId:"u4", status:"draft", updated:"27/08/2026",
+    emo:"📙", color:"#E9A23B", teacherId:"u4", updated:"27/08/2026",
     desc:"Giao tiếp nơi làm việc: email, họp, đàm phán, giới thiệu công ty." },
   { id:"c4", code:"HSK3-LT", zh:"HSK 三级冲刺", vi:"Luyện thi HSK 3", level:"HSK 3",
-    emo:"📕", color:"#8B5CF6", teacherId:"u4", status:"pub", updated:"02/08/2026",
+    emo:"📕", color:"#8B5CF6", teacherId:"u4", updated:"02/08/2026",
     desc:"Ôn tập cấp tốc theo cấu trúc đề thi HSK 3." }
 ];
 
@@ -51,11 +49,10 @@ SEED.courses = [
    -------------------------------------------------------------------------- */
 SEED.lessons = [
   { id:"l1", courseId:"c1", no:1, zh:"你叫什么名字", py:"Nǐ jiào shénme míngzi", vi:"Bạn tên là gì?",
-    status:"pub", vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
+    vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
   { id:"l2", courseId:"c1", no:2, zh:"你是哪国人", py:"Nǐ shì nǎ guó rén", vi:"Bạn là người nước nào?",
-    status:"pub", vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
+    vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
   { id:"l3", courseId:"c1", no:3, zh:"你做什么工作", py:"Nǐ zuò shénme gōngzuò", vi:"Bạn làm nghề gì?",
-    status:"pub",
     vocab:[
       {hz:"工作",py:"gōngzuò",hv:"công tác",pos:"danh từ 名 · động từ 动",vi:"công việc; làm việc",emo:"💼",ex:{zh:"你做什么工作？",py:"Nǐ zuò shénme gōngzuò?",vi:"Bạn làm nghề gì?"}},
       {hz:"做",py:"zuò",hv:"tố",pos:"động từ 动",vi:"làm",emo:"🔨",ex:{zh:"你做什么？",py:"Nǐ zuò shénme?",vi:"Bạn làm gì?"}},
@@ -171,11 +168,11 @@ SEED.lessons = [
     ]
   },
   { id:"l4", courseId:"c1", no:4, zh:"现在几点", py:"Xiànzài jǐ diǎn", vi:"Bây giờ là mấy giờ?",
-    status:"draft", vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
+    vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
   { id:"l5", courseId:"c1", no:5, zh:"你家有几口人", py:"Nǐ jiā yǒu jǐ kǒu rén", vi:"Nhà bạn có mấy người?",
-    status:"draft", vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
+    vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
   { id:"l6", courseId:"c1", no:6, zh:"多少钱", py:"Duōshao qián", vi:"Bao nhiêu tiền?",
-    status:"draft", vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] }
+    vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] }
 ];
 
 /* ---------------------------------------------------------------- LỚP HỌC */
@@ -298,7 +295,7 @@ SEED.colorPool = ["#D6453D","#E9A23B","#2F9E77","#3B6FD4","#8B5CF6"];
 SEED.activity = [
   {ic:"🟢", who:"Trần Thị Lan", what:"đã gửi ghi chú cho <b>Phạm Thu Hà</b> — Bài tập Bài 3", when:"Hôm nay, 08:05"},
   {ic:"🔵", who:"Trần Thị Lan", what:"đã giao <b>Bài tập Bài 3</b> cho lớp HSK1-A01", when:"01/09, 18:02"},
-  {ic:"🟣", who:"Nguyễn Minh Anh", what:"đã thêm 2 học viên vào lớp <b>HSK3-D01</b>", when:"31/08, 15:40"},
+  {ic:"🟣", who:"Phạm Quốc Đạt", what:"đã thêm 2 học viên vào lớp <b>HSK3-D01</b>", when:"31/08, 15:40"},
   {ic:"🟠", who:"Phạm Quốc Đạt", what:"đã xuất bản <b>Bài 8 · 商务汉语</b>", when:"27/08, 21:15"},
   {ic:"🟢", who:"Phạm Thu Hà", what:"đã nộp <b>Bài tập Bài 3</b>", when:"31/08, 21:02"}
 ];

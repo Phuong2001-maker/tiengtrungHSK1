@@ -56,13 +56,9 @@ var App = (function () {
 
     /* kiểm tra quyền */
     if (r.roles && me && r.roles.indexOf(me.role) < 0) {
-      /* quản trị được vào mọi màn của giáo viên */
-      var okAdmin = me.role === "admin" && r.roles.indexOf("gv") >= 0;
-      if (!okAdmin) {
-        UI.toast("Bạn không có quyền vào mục này.", "no");
-        location.hash = homeOf(me);
-        return;
-      }
+      UI.toast("Bạn không có quyền vào mục này.", "no");
+      location.hash = homeOf(me);
+      return;
     }
 
     var params = m.params;
@@ -75,7 +71,7 @@ var App = (function () {
     bindCommon(root);
   }
 
-  function homeOf(u) { return u.role === "hv" ? "#/hv" : u.role === "gv" ? "#/gv" : "#/admin"; }
+  function homeOf(u) { return u.role === "hv" ? "#/hv" : "#/gv"; }
 
   /* ------------------------------------------------------- sự kiện dùng chung */
   function bindCommon(root) {
@@ -96,6 +92,25 @@ var App = (function () {
         footer: '<button class="btn ghost" data-close>Ở lại</button><button class="btn red" id="outOk">Đăng xuất</button>',
         onReady: function (m) {
           UI.qs("#outOk", m).onclick = function () {
+            Store.logout(); UI.closeModal(); UI.go("#/login");
+          };
+        }
+      });
+    };
+
+    /* thẻ tài khoản ở góc phải */
+    var ac = UI.qs("[data-act=acct]", root);
+    if (ac) ac.onclick = function () {
+      var u = Store.me();
+      UI.modal({
+        title: "Tài khoản",
+        body: '<div class="row mb">' + UI.av(u, 48) + '<div><div class="bb">' + UI.h(u.name) + '</div>' +
+          '<div class="sm muted">' + UI.h(u.email) + ' · ' + UI.roleName(u.role) + '</div></div></div>' +
+          '<p class="sm muted">Bạn sẽ quay về màn hình đăng nhập. Dữ liệu bài làm đã lưu vẫn được giữ.</p>',
+        footer: '<button class="btn ghost" data-close>Đóng</button>' +
+          '<button class="btn red" id="acOut">⎋ Đăng xuất</button>',
+        onReady: function (m) {
+          UI.qs("#acOut", m).onclick = function () {
             Store.logout(); UI.closeModal(); UI.go("#/login");
           };
         }

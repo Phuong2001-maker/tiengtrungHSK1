@@ -45,45 +45,24 @@ function tra(w) {
 
 /* ====================================================== S-12 DANH SÁCH */
 ROUTES["admin/giao-trinh"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function () {
     var cs = Store.myCourses();
-    var pub = cs.filter(function (c) { return c.status === "pub"; }).length;
     var rows = cs.map(function (c) {
       var nk = Store.s.classes.filter(function (k) { return k.courseId === c.id; }).length;
-      return '<tr data-f="' + c.status + '"><td class="b sm">' + UI.h(c.code) + '</td>' +
+      return '<tr><td class="b sm">' + UI.h(c.code) + '</td>' +
         '<td><div class="row"><span style="font-size:24px">' + c.emo + '</span>' +
         '<div><div class="b">' + UI.h(c.vi) + '</div><div class="xs muted zh">' + UI.h(c.zh) + '</div></div></div></td>' +
         '<td>' + UI.chip(c.level, "blue") + '</td>' +
         '<td class="b">' + Store.lessonsOf(c.id).length + '</td>' +
         '<td>' + (nk ? nk + " lớp" : '<span class="muted">—</span>') + '</td>' +
-        '<td class="sm">' + UI.h(Store.user(c.teacherId).name) + '</td>' +
-        '<td class="sm muted">' + UI.h(c.updated) + '</td>' +
-        '<td>' + UI.st(c.status) + '</td>' +
         '<td style="text-align:right"><a class="btn ghost sm" href="#/admin/giao-trinh/' + c.id + '">Mở</a></td></tr>';
     });
-    var body = '<div class="row wrap mb" id="fBar">' +
-      '<span class="chip btn-like on" data-f="all">Tất cả (' + cs.length + ')</span>' +
-      '<span class="chip btn-like" data-f="pub">Đang dùng (' + pub + ')</span>' +
-      '<span class="chip btn-like" data-f="draft">Bản nháp (' + (cs.length - pub) + ')</span>' +
-      '<span class="right row"><input class="inp sm" id="qSearch" placeholder="🔍 Tìm giáo trình…" style="width:210px">' +
-      '<button class="btn ghost sm" data-act="excel">⤓ Xuất Excel</button></span></div>' +
-      UI.table(["Mã", "Tên giáo trình", "Cấp độ", "Số bài", "Lớp đang dùng", "Phụ trách", "Cập nhật", "Trạng thái", ""], rows, 1000) +
-      '<div class="mt2">' + UI.alert("blue", "💡",
-        '<b>Giáo trình → Bài học → 5 phần.</b> Mỗi giáo trình chứa nhiều bài; mỗi bài gồm đúng 5 phần ' +
-        '(Khởi động · Từ mới · Ôn tập · Ngữ pháp · Hội thoại) — chính là 5 tab mà học viên nhìn thấy. ' +
-        'Giáo trình ở trạng thái <b>Bản nháp</b> không hiện với học viên.') + '</div>';
-    return UI.shell({ active: "#/admin/giao-trinh", title: "Giáo trình", crumb: "Quản trị",
+    var body = UI.table(["Mã", "Tên giáo trình", "Cấp độ", "Số bài", "Lớp đang dùng", ""], rows, 760);
+    return UI.shell({ active: "#/admin/giao-trinh", title: "Giáo trình", crumb: "Quản lý",
       actions: '<button class="btn red sm" id="newCourse">＋ Tạo giáo trình</button>', body: body });
   },
   init: function (root) {
-    filterBar(root);
-    UI.qs("#qSearch", root).oninput = function () {
-      var q = this.value.toLowerCase();
-      UI.qsa("tbody tr", root).forEach(function (tr) {
-        tr.style.display = tr.textContent.toLowerCase().indexOf(q) >= 0 ? "" : "none";
-      });
-    };
     UI.qs("#newCourse", root).onclick = function () {
       UI.modal({
         title: "Tạo giáo trình mới",
@@ -99,9 +78,9 @@ ROUTES["admin/giao-trinh"] = {
             if (!code || !vi) { UI.toast("Cần nhập mã và tên tiếng Việt.", "no"); return; }
             var c = { id: Store.id("c"), code: code, vi: vi, zh: UI.qs("#ncZh", m).value.trim() || vi,
               level: UI.qs("#ncLv", m).value, emo: "📗", color: "#D6453D", teacherId: Store.me().id,
-              status: "draft", updated: Store.nowStr().split(" ")[0], desc: "" };
+              updated: Store.nowStr().split(" ")[0], desc: "" };
             Store.s.courses.push(c); Store.save();
-            UI.closeModal(); UI.toast("Đã tạo giáo trình (bản nháp).", "ok");
+            UI.closeModal(); UI.toast("Đã tạo giáo trình.", "ok");
             UI.go("#/admin/giao-trinh/" + c.id);
           };
         }
@@ -110,32 +89,15 @@ ROUTES["admin/giao-trinh"] = {
   }
 };
 
-function filterBar(root) {
-  var bar = UI.qs("#fBar", root); if (!bar) return;
-  UI.qsa(".chip", bar).forEach(function (c) {
-    c.onclick = function () {
-      UI.qsa(".chip", bar).forEach(function (x) { x.classList.remove("on"); });
-      c.classList.add("on");
-      var f = c.getAttribute("data-f");
-      UI.qsa("tbody tr", root).forEach(function (tr) {
-        tr.style.display = (f === "all" || tr.getAttribute("data-f") === f) ? "" : "none";
-      });
-    };
-  });
-}
-
 /* ====================================================== S-13 THÔNG TIN */
 ROUTES["admin/giao-trinh/:cid"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function (p) {
     var c = Store.course(p.cid);
     if (!c) return UI.shell({ active: "#/admin/giao-trinh", title: "Không tìm thấy", crumb: "", body: '<div class="empty">Giáo trình không tồn tại.</div>' });
     var ls = Store.lessonsOf(c.id);
-    var ks = Store.s.classes.filter(function (k) { return k.courseId === c.id; });
-    var teachers = Store.s.users.filter(function (u) { return u.role === "gv"; });
 
-    var body = '<div class="pill-tabs"><a class="on">Thông tin chung</a>' +
-      '<a href="#/hv/giao-trinh/' + c.id + '">Xem như học viên</a></div>' +
+    var body = '<div class="pill-tabs"><a class="on">Thông tin chung</a></div>' +
       '<div class="grid" style="grid-template-columns:1fr 340px;gap:18px;align-items:start">' +
       '<div class="card pad"><div class="bb mb" style="font-size:16px">Thông tin giáo trình</div>' +
         '<div class="grid g2" style="gap:0 16px">' +
@@ -156,48 +118,28 @@ ROUTES["admin/giao-trinh/:cid"] = {
           '<div class="fld"><label>Màu chủ đề</label><div class="colorpick" id="cColor">' +
             SEED.colorPool.map(function (x) { return '<span class="' + (x === c.color ? "on" : "") + '" data-c="' + x + '" style="background:' + x + '"></span>'; }).join('') +
             '</div></div></div>' +
-        '<div class="grid g2" style="gap:0 16px">' +
-          '<div class="fld"><label>Giáo viên phụ trách</label><select class="inp" id="cGv">' +
-            teachers.map(function (t) { return '<option value="' + t.id + '"' + (t.id === c.teacherId ? ' selected' : '') + '>' + UI.h(t.name) + '</option>'; }).join('') +
-            '</select></div>' +
-          '<div class="fld"><label>Trạng thái</label><select class="inp" id="cSt">' +
-            '<option value="pub"' + (c.status === "pub" ? " selected" : "") + '>Đang dùng — học viên xem được</option>' +
-            '<option value="draft"' + (c.status === "draft" ? " selected" : "") + '>Bản nháp — chỉ giáo viên xem</option>' +
-            '<option value="arch"' + (c.status === "arch" ? " selected" : "") + '>Lưu trữ</option></select>' +
-            '<div class="hint">Chuyển sang "Đang dùng" thì mọi lớp gắn giáo trình này thấy ngay.</div></div></div>' +
         '<div class="row mt2" style="border-top:1.5px solid var(--line);padding-top:16px">' +
           '<a class="btn ghost" href="#/admin/giao-trinh">Huỷ</a>' +
-          '<span class="right row"><button class="btn ghost" id="cSaveDraft">💾 Lưu nháp</button>' +
-          '<button class="btn red" id="cSave">✔ Lưu &amp; xuất bản</button></span></div>' +
+          '<span class="right row"><button class="btn red" id="cSave">✔ Lưu thay đổi</button></span></div>' +
       '</div>' +
       '<div>' +
         '<div class="card pad mb"><div class="row mb"><b class="grow">Bài học (' + ls.length + ')</b>' +
           '<button class="btn red sm" id="addLesson">＋ Thêm bài</button></div>' +
           '<div id="lessonList">' + ls.map(function (l, i) {
-            return '<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)" data-lid="' + l.id + '">' +
-              '<span class="muted" style="cursor:grab" title="Kéo để đổi thứ tự">⠿</span>' +
+            return '<div class="row" style="padding:9px 0;border-bottom:1px solid var(--line)">' +
               '<span class="chip">' + l.no + '</span>' +
               '<a class="grow" href="#/admin/soan-bai/' + l.id + '" style="min-width:0">' +
                 '<div class="b sm zh" style="font-size:15px">' + UI.h(l.zh) + '</div>' +
                 '<div class="xs muted">' + UI.h(l.vi) + ' · ' + l.vocab.length + ' từ</div></a>' +
-              (l.status === "pub" ? UI.chip("✓", "jade") : UI.chip("Nháp", "gold")) +
-              '<button class="btn ghost sm" data-up="' + l.id + '" title="Lên">↑</button>' +
-              '<button class="btn ghost sm" data-down="' + l.id + '" title="Xuống">↓</button>' +
+              '<a class="btn ghost sm" href="#/admin/soan-bai/' + l.id + '" title="Sửa nội dung bài">✏️ Sửa</a>' +
+              '<button class="btn ghost sm" data-up="' + l.id + '" title="Đưa lên trên">↑</button>' +
+              '<button class="btn ghost sm" data-down="' + l.id + '" title="Đưa xuống dưới">↓</button>' +
             '</div>';
           }).join('') + '</div>' +
-          '<div class="mt">' + UI.alert("blue", "⠿", '<span class="sm">Dùng ↑ ↓ để đổi thứ tự bài. Thứ tự này chính là thứ tự học viên nhìn thấy.</span>') + '</div></div>' +
-        '<div class="card pad"><b>Đang được dùng bởi</b>' +
-          (ks.length ? ks.map(function (k) {
-            return '<div class="row mt">' + UI.chip(k.code, "blue") +
-              '<a class="grow sm" href="#/admin/lop/' + k.id + '">' + UI.h(k.name) + '</a>' +
-              '<span class="sm muted">' + k.students.length + ' HV</span></div>';
-          }).join('') + '<div class="mt">' + UI.alert("gold", "⚠️",
-            '<span class="sm">Sửa nội dung bài sẽ ảnh hưởng tới <b>' + ks.length + ' lớp</b>. Bài tập đã giao vẫn giữ nguyên đề cũ.</span>') + '</div>'
-            : '<div class="empty sm">Chưa có lớp nào dùng giáo trình này.</div>') +
-        '</div></div></div>';
+          '<div class="mt">' + UI.alert("blue", "↕", '<span class="sm">Bấm <b>✏️ Sửa</b> để soạn nội dung bài. Dùng ↑ ↓ để đổi thứ tự — thứ tự này chính là thứ tự học viên nhìn thấy.</span>') + '</div></div>' +
+      '</div></div>';
 
-    return UI.shell({ active: "#/admin/giao-trinh", title: c.vi, crumb: "Quản trị · Giáo trình · " + c.code,
-      actions: '<a href="#/hv/giao-trinh/' + c.id + '" class="btn ghost sm">👁 Xem như học viên</a>', body: body });
+    return UI.shell({ active: "#/admin/giao-trinh", title: c.vi, crumb: "Quản lý · Giáo trình · " + c.code, body: body });
   },
   init: function (root, p) {
     var c = Store.course(p.cid); if (!c) return;
@@ -213,19 +155,16 @@ ROUTES["admin/giao-trinh/:cid"] = {
         s.classList.add("on"); c.color = s.getAttribute("data-c");
       };
     });
-    function collect(status) {
+    function collect() {
       c.code = UI.qs("#cCode", root).value.trim();
       c.vi = UI.qs("#cVi", root).value.trim();
       c.zh = UI.qs("#cZh", root).value.trim();
       c.desc = UI.qs("#cDesc", root).value.trim();
       c.level = UI.qs("#cLv", root).value.split(" —")[0];
-      c.teacherId = UI.qs("#cGv", root).value;
-      c.status = status || UI.qs("#cSt", root).value;
       c.updated = Store.nowStr().split(" ")[0];
       Store.save();
     }
-    UI.qs("#cSaveDraft", root).onclick = function () { collect("draft"); UI.toast("Đã lưu bản nháp.", "ok"); App.render(); };
-    UI.qs("#cSave", root).onclick = function () { collect("pub"); UI.toast("Đã lưu và xuất bản cho học viên.", "ok"); App.render(); };
+    UI.qs("#cSave", root).onclick = function () { collect(); UI.toast("Đã lưu — học viên thấy ngay.", "ok"); App.render(); };
 
     UI.qsa("[data-up],[data-down]", root).forEach(function (b) {
       b.onclick = function () {
@@ -252,7 +191,7 @@ ROUTES["admin/giao-trinh/:cid"] = {
             if (!zh || !vi) { UI.toast("Cần nhập tên tiếng Trung và tiếng Việt.", "no"); return; }
             var ls = Store.lessonsOf(c.id);
             var l = { id: Store.id("l"), courseId: c.id, no: ls.length + 1, zh: zh,
-              py: UI.qs("#nlPy", m).value.trim(), vi: vi, status: "draft",
+              py: UI.qs("#nlPy", m).value.trim(), vi: vi,
               vocab: [], extra: [], match: [], sentences: [], grammar: [], dialogues: [] };
             Store.s.lessons.push(l); Store.save();
             UI.closeModal(); UI.go("#/admin/soan-bai/" + l.id);
@@ -266,7 +205,7 @@ ROUTES["admin/giao-trinh/:cid"] = {
 /* ====================================================== S-14 SOẠN BÀI */
 var EDIT_TAB = "vocab";
 ROUTES["admin/soan-bai/:lid"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function (p) {
     var l = Store.lesson(p.lid);
     if (!l) return UI.shell({ active: "#/admin/giao-trinh", title: "Không tìm thấy", crumb: "", body: '<div class="empty">Bài học không tồn tại.</div>' });
@@ -291,21 +230,15 @@ ROUTES["admin/soan-bai/:lid"] = {
       '<div class="card pad" id="editBox">' + editTabBody(l) + '</div>' +
 
       '<div class="row mt2" style="border-top:1.5px solid var(--line);padding-top:15px">' +
-        '<span class="sm muted grow" id="savedAt">Chưa lưu thay đổi</span>' +
-        '<a class="btn ghost" href="#/hoc/' + l.id + '">👁 Xem trước</a>' +
-        '<button class="btn ghost" id="eDraft">💾 Lưu nháp</button>' +
-        '<button class="btn red" id="ePub">✔ Xuất bản cho lớp</button></div>' +
+        '<span class="grow"></span>' +
+        '<button class="btn red" id="ePub">✔ Lưu bài</button></div>' +
     '</div>' +
 
-    '<div class="prev"><div class="ph"><span>👁</span><span class="grow">XEM TRƯỚC — HỌC VIÊN SẼ THẤY</span>' +
-      '<button class="chip btn-like on" data-pv="desk">🖥 Máy tính</button>' +
-      '<button class="chip btn-like" data-pv="phone">📱 Điện thoại</button></div>' +
+    '<div class="prev">' +
       '<div class="pb" id="prevBox">' + previewBody(l) + '</div></div></div>';
 
     return UI.shell({ active: "#/admin/giao-trinh", title: "Soạn bài " + l.no + " — " + l.zh,
-      crumb: "Quản trị · " + c.code + " · Bài " + l.no,
-      actions: l.status === "pub" ? UI.chip("● Đang dùng", "jade") : UI.chip("● Bản nháp — chưa xuất bản", "gold"),
-      body: body });
+      crumb: "Quản lý · " + c.code + " · Bài " + l.no, body: body });
   },
   init: function (root, p) { initEditor(root, p); }
 };
@@ -420,19 +353,11 @@ function previewBody(l) {
 function initEditor(root, p) {
   var l = Store.lesson(p.lid); if (!l) return;
   var dirty = false;
-  function touch() { dirty = true; UI.qs("#savedAt", root).textContent = "Có thay đổi chưa lưu"; }
+  function touch() { dirty = true; }
 
   UI.qsa(".etab", root).forEach(function (t) {
     t.onclick = function () { EDIT_TAB = t.getAttribute("data-tab"); App.render(); };
   });
-  UI.qsa("[data-pv]", root).forEach(function (b) {
-    b.onclick = function () {
-      UI.qsa("[data-pv]", root).forEach(function (x) { x.classList.remove("on"); });
-      b.classList.add("on");
-      UI.qs("#prevBox", root).classList.toggle("phone", b.getAttribute("data-pv") === "phone");
-    };
-  });
-
   /* thông tin bài */
   ["eZh", "ePy", "eVi", "eNo"].forEach(function (id) {
     var el = UI.qs("#" + id, root); if (!el) return;
@@ -598,23 +523,10 @@ function initEditor(root, p) {
   }
 
   /* lưu */
-  UI.qs("#eDraft", root).onclick = function () {
-    l.status = "draft"; Store.save();
-    UI.qs("#savedAt", root).textContent = "Đã lưu nháp lúc " + Store.nowStr().split(" ")[1];
-    UI.toast("Đã lưu bản nháp.", "ok");
-  };
   UI.qs("#ePub", root).onclick = function () {
-    if (!l.vocab.length) { UI.toast("Bài chưa có từ mới nào — chưa xuất bản được.", "no"); return; }
-    l.status = "pub";
     var c = Store.course(l.courseId); c.updated = Store.nowStr().split(" ")[0];
     Store.save();
-    var ks = Store.s.classes.filter(function (k) { return k.courseId === l.courseId; });
-    var n = 0; ks.forEach(function (k) {
-      k.students.forEach(function (sid) {
-        Store.notify(sid, "Bài học mới", "Bài " + l.no + " · " + l.zh + " đã mở", "#/hoc/" + l.id); n++;
-      });
-    });
-    UI.toast("Đã xuất bản. " + n + " học viên nhận được bài này.", "ok");
+    UI.toast("Đã lưu — học viên thấy ngay.", "ok");
     App.render();
   };
 }

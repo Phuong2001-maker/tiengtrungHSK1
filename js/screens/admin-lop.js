@@ -9,17 +9,14 @@ function classProg(k) {
 
 /* ====================================================== S-15 DANH SÁCH LỚP */
 ROUTES["admin/lop"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function () {
     var u = Store.me();
-    var ks = u.role === "admin" ? Store.s.classes : Store.classesOfTeacher(u.id);
-    var cnt = { run: 0, soon: 0, done: 0 };
-    ks.forEach(function (k) { cnt[k.status]++; });
-    var total = ks.reduce(function (t, k) { return t + k.students.length; }, 0);
+    var ks = Store.classesOfTeacher(u.id);
 
     var rows = ks.map(function (k) {
       var p = classProg(k);
-      return '<tr data-f="' + k.status + '"><td class="b sm">' + UI.h(k.code) + '</td>' +
+      return '<tr><td class="b sm">' + UI.h(k.code) + '</td>' +
         '<td class="b">' + UI.h(k.name) + '</td>' +
         '<td class="sm">' + UI.h(Store.course(k.courseId).vi) + '</td>' +
         '<td class="sm">' + UI.h(Store.user(k.teacherId).name) + '</td>' +
@@ -31,25 +28,12 @@ ROUTES["admin/lop"] = {
         '<td style="text-align:right"><a class="btn ghost sm" href="#/admin/lop/' + k.id + '">Mở</a></td></tr>';
     });
 
-    var body = '<div class="row wrap mb" id="fBar">' +
-      '<span class="chip btn-like on" data-f="all">Tất cả (' + ks.length + ')</span>' +
-      '<span class="chip btn-like" data-f="run">Đang học (' + cnt.run + ')</span>' +
-      '<span class="chip btn-like" data-f="soon">Sắp khai giảng (' + cnt.soon + ')</span>' +
-      '<span class="chip btn-like" data-f="done">Đã kết thúc (' + cnt.done + ')</span>' +
-      '<span class="right sm muted">Tổng ' + total + ' lượt ghi danh</span></div>' +
-      UI.table(["Mã lớp", "Tên lớp", "Giáo trình", "Giáo viên", "Sĩ số", "Lịch học", "Tiến độ", "Trạng thái", ""], rows, 1080) +
-      '<div class="grid g2 mt2">' +
-        UI.alert("blue", "🏫", '<b>Một lớp = một giáo trình + một giáo viên + danh sách học viên.</b> ' +
-          'Bài tập luôn giao theo lớp, nên học viên chỉ nhận đúng bài của lớp mình.') +
-        UI.alert("gold", "🔑", '<b>Mã lớp</b> (ví dụ <b>HSK1-A01</b>) dùng để học viên tự tham gia: ' +
-          'học viên nhập mã, giáo viên duyệt là vào lớp — không cần nhập tay từng người.') +
-      '</div>';
+    var body = UI.table(["Mã lớp", "Tên lớp", "Giáo trình", "Giáo viên", "Sĩ số", "Lịch học", "Tiến độ", "Trạng thái", ""], rows, 1080);
 
-    return UI.shell({ active: "#/admin/lop", title: "Lớp học", crumb: "Quản trị",
+    return UI.shell({ active: "#/admin/lop", title: "Lớp học", crumb: "Quản lý",
       actions: '<button class="btn red sm" id="newClass">＋ Tạo lớp</button>', body: body });
   },
   init: function (root) {
-    filterBar(root);
     UI.qs("#newClass", root).onclick = function () {
       var cs = Store.myCourses(), gvs = Store.s.users.filter(function (u) { return u.role === "gv"; });
       UI.modal({
@@ -86,7 +70,7 @@ ROUTES["admin/lop"] = {
 /* ====================================================== S-16 CHI TIẾT LỚP */
 var CLASS_TAB = "hv";
 ROUTES["admin/lop/:kid"] = {
-  roles: ["gv", "admin"],
+  roles: ["gv"],
   view: function (p) {
     var k = Store.cls(p.kid);
     if (!k) return UI.shell({ active: "#/admin/lop", title: "Không tìm thấy", crumb: "", body: '<div class="empty">Lớp không tồn tại.</div>' });
@@ -135,7 +119,7 @@ ROUTES["admin/lop/:kid"] = {
           '<a class="btn ghost block mt" href="#/admin/giao-trinh/' + c.id + '">📚 Mở giáo trình</a></div>' +
       '</div></div>';
 
-    return UI.shell({ active: "#/admin/lop", title: k.name, crumb: "Quản trị · Lớp học · " + k.code,
+    return UI.shell({ active: "#/admin/lop", title: k.name, crumb: "Quản lý · Lớp học · " + k.code,
       actions: '<a href="#/admin/bai-tap/moi?k=' + k.id + '" class="btn red sm">＋ Giao bài tập cho lớp</a>', body: body });
   },
 
@@ -254,7 +238,7 @@ function classTabBody(k, c, asgs) {
     return UI.table(["Bài tập", "Hạn nộp", "Đã nộp", "Đã chấm", "Trạng thái", ""], rows2, 720);
   }
   if (CLASS_TAB === "td") {
-    var ls = Store.lessonsOf(k.courseId).filter(function (l) { return l.status === "pub"; });
+    var ls = Store.lessonsOf(k.courseId);
     var rows3 = k.students.map(function (sid) {
       var u = Store.user(sid);
       return '<tr><td style="width:44px">' + UI.av(u) + '</td><td class="b">' + UI.h(u.name) + '</td>' +

@@ -25,7 +25,6 @@ var UI = (function () {
   function chip(t, cl) { return '<span class="chip ' + (cl || "") + '">' + t + '</span>'; }
 
   var STATUS = {
-    pub: ["Đang dùng", "jade"], draft: ["Bản nháp", "gold"], arch: ["Lưu trữ", "grey"],
     run: ["Đang học", "jade"], soon: ["Sắp khai giảng", "blue"], done: ["Đã kết thúc", "grey"],
     open: ["Đang mở", "jade"], closed: ["Đã đóng", "grey"],
     none: ["Chưa nộp", "grey"], draftS: ["Đang làm dở", "gold"],
@@ -76,20 +75,19 @@ var UI = (function () {
       ["#/hv/bai-tap", "📝", "Bài tập", hvTodo ? String(hvTodo) : ""],
       ["#/hv/ket-qua", "🎯", "Kết quả & ghi chú", ""]
     ];
-    var base = [
-      [u.role === "admin" ? "#/admin" : "#/gv", "🏠", u.role === "admin" ? "Tổng quan" : "Bảng điều khiển", ""],
+    return [
+      ["#/gv", "🏠", "Bảng điều khiển", ""],
       ["#/admin/giao-trinh", "📚", "Giáo trình", ""],
       ["#/admin/lop", "🏫", "Lớp học", ""],
       ["#/admin/bai-tap", "📝", "Bài tập", ""],
-      ["#/admin/cham", "📥", "Bài cần chấm", pending ? String(pending) : ""]
+      ["#/admin/cham", "📥", "Bài cần chấm", pending ? String(pending) : ""],
+      ["#/admin/nguoi-dung", "👥", "Người dùng", ""]
     ];
-    if (u.role === "admin") base.push(["#/admin/nguoi-dung", "👥", "Người dùng", ""]);
-    return base;
   }
 
   function pendingGrade(u) {
     if (!u || u.role === "hv") return 0;
-    var ks = u.role === "admin" ? Store.s.classes : Store.classesOfTeacher(u.id);
+    var ks = Store.classesOfTeacher(u.id);
     var kid = {}; ks.forEach(function (k) { kid[k.id] = 1; });
     var n = 0;
     Store.s.assignments.forEach(function (a) {
@@ -122,7 +120,7 @@ var UI = (function () {
       '<div class="app">' +
       '<aside class="side" id="side">' +
         '<div class="brand"><span class="mark zh">汉</span><span>HanZi<span style="opacity:.5">LMS</span></span></div>' +
-        '<div class="grp">' + (u.role === "hv" ? "Học tập" : "Giảng dạy &amp; quản trị") + '</div>' +
+        '<div class="grp">' + (u.role === "hv" ? "Học tập" : "Giảng dạy &amp; quản lý") + '</div>' +
         menu.map(function (m) {
           return '<a href="' + m[0] + '" class="' + (m[0] === o.active ? "on" : "") + '">' +
             '<span class="ic">' + m[1] + '</span>' + m[2] +
@@ -138,10 +136,10 @@ var UI = (function () {
           '<button class="burger" data-act="burger">☰</button>' +
           '<div><div class="crumb">' + (o.crumb || "") + '</div><h1>' + o.title + '</h1></div>' +
           '<div class="right row">' + (o.actions || "") +
-            '<input class="search inp sm" placeholder="🔍 Tìm nhanh…">' +
             '<button class="btn ghost sm" data-act="notif" style="position:relative">🔔' +
               (unread ? '<span class="bdg" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:99px">' + unread + '</span>' : '') +
-            '</button>' + av(u, 36) +
+            '</button>' +
+            '<button class="acct" data-act="acct" title="Tài khoản">' + av(u, 36) + '</button>' +
           '</div>' +
         '</div>' +
         '<div class="body fade">' + o.body + '</div>' +
@@ -149,7 +147,7 @@ var UI = (function () {
   }
 
   function roleName(r) {
-    return r === "admin" ? "Quản trị viên" : r === "gv" ? "Giáo viên" : "Học viên";
+    return r === "gv" ? "Giáo viên" : "Học viên";
   }
 
   /* ------------------------------------------------------------ khối hay dùng */

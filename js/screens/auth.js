@@ -20,7 +20,6 @@ ROUTES["login"] = {
       '</div>' +
       '<div class="auth-form"><div class="auth-box">' +
         '<h1>Chào mừng trở lại 👋</h1>' +
-        '<div class="sub">Đăng nhập để tiếp tục <b>Bài 3 · 你做什么工作</b></div>' +
         '<div class="auth-err hide" id="lgErr"><span>⚠️</span><span id="lgErrTxt"></span></div>' +
         '<form id="lgForm">' +
         '<div class="fld" id="fEmail"><label for="lgEmail">Email hoặc số điện thoại</label>' +
@@ -40,15 +39,6 @@ ROUTES["login"] = {
         '</form>' +
         '<div class="auth-div">hoặc</div>' +
         '<button class="btn ghost block" style="padding:13px" data-act="google">🟦 Đăng nhập bằng Google</button>' +
-        '<div class="auth-demo"><div class="t">👀 ĐĂNG NHẬP NHANH — 3 TÀI KHOẢN CÓ SẴN</div>' +
-          '<div class="rowd">' +
-            '<button class="btn" data-quick="u3">🎒 Học viên</button>' +
-            '<button class="btn" data-quick="u2">👩‍🏫 Giáo viên</button>' +
-            '<button class="btn" data-quick="u1">🛡️ Quản trị</button>' +
-          '</div>' +
-          '<div class="xs muted" style="margin-top:8px;line-height:1.5">' +
-            'hv@hanzi.vn · gv@hanzi.vn · admin@hanzi.vn — mật khẩu chung <b>123456</b></div>' +
-        '</div>' +
         '<div class="auth-foot">Chưa có tài khoản? Học viên được giáo viên tạo sẵn — hãy hỏi lớp của bạn để lấy <b>mã lớp</b>.</div>' +
       '</div></div>' +
     '</div>';
@@ -61,16 +51,8 @@ ROUTES["login"] = {
       this.textContent = pass.type === "password" ? "👁" : "🙈";
     };
 
-    UI.qsa("[data-quick]", root).forEach(function (b) {
-      b.onclick = function () {
-        var u = Store.user(b.getAttribute("data-quick"));
-        email.value = u.email; pass.value = u.pass;
-        submit();
-      };
-    });
-
     UI.qs("[data-act=google]").onclick = function () {
-      UI.toast("Bản demo chưa nối Google. Dùng 3 tài khoản có sẵn bên dưới nhé.", "info");
+      UI.toast("Bản demo chưa nối Google. Hãy đăng nhập bằng email và mật khẩu.", "info");
     };
 
     UI.qs("#lgForm").onsubmit = function (e) { e.preventDefault(); submit(); };
@@ -101,7 +83,7 @@ ROUTES["login"] = {
           return;
         }
         UI.toast("Xin chào " + r.user.name + "!", "ok");
-        UI.go(r.user.role === "hv" ? "#/hv" : r.user.role === "gv" ? "#/gv" : "#/admin");
+        UI.go(r.user.role === "hv" ? "#/hv" : "#/gv");
       }, 260);
     }
     email.focus();

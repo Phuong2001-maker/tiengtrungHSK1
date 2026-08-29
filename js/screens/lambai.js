@@ -62,6 +62,8 @@ ROUTES["hv/lam-bai/:aid"] = {
     var u = Store.me(), a = Store.asg(p.aid);
     if (!a) return;
     var sub = Store.subOf(a.id, u.id);
+    /* đã nộp rồi thì màn chỉ có dòng thông báo, không có câu hỏi nào để gắn sự kiện */
+    if (sub && sub.status !== "draft") return;
     var ans = (sub && sub.status === "draft") ? JSON.parse(JSON.stringify(sub.answers || {})) : {};
 
     function refresh() {
