@@ -274,6 +274,8 @@ select.inp{cursor:pointer}
 .vemo{width:56px;height:56px;border-radius:16px;background:var(--gold-soft);display:grid;place-items:center;font-size:30px;flex:0 0 auto}
 .vhz{font-family:var(--hanzi);font-size:32px;font-weight:900;line-height:1.15}
 .vpy{font-size:15px;font-weight:700;color:var(--red)}
+.vhv{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.vhv b{color:var(--purple)}
 .vtags{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0 9px}
 .vmean{font-size:15px;font-weight:700}
 .vex{margin-top:11px;background:var(--paper);border-radius:12px;padding:9px 12px;font-size:13px;border-left:3px solid var(--gold)}
@@ -358,7 +360,7 @@ select.inp{cursor:pointer}
 /* ==========================================================================
    SOẠN BÀI
    ========================================================================== */
-.edit{display:grid;grid-template-columns:1fr 400px;gap:18px;align-items:start}
+.edit{display:block}
 .etabs{display:flex;gap:5px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:5px;margin-bottom:14px;overflow-x:auto}
 .etab{flex:1;text-align:center;padding:9px 6px;border-radius:10px;font-size:13px;font-weight:700;color:var(--muted);border:none;background:none;white-space:nowrap}
 .etab.on{background:var(--ink);color:#fff}
@@ -371,10 +373,29 @@ select.inp{cursor:pointer}
 .vrow input.auto{background:var(--jade-soft);border-color:#BFE5D6;color:#1B7A58;font-weight:600}
 .vrow .del{background:none;border:none;color:var(--muted);font-size:15px}
 .vrow .del:hover{color:var(--red)}
+/* --- soạn Từ mới: mỗi từ một thẻ, đủ ô cho mọi thứ thẻ học viên hiển thị --- */
+.veditgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.vebox{border:1.5px solid var(--line);border-radius:14px;padding:13px;background:var(--paper)}
+.vebox .inp{background:#fff}
+.vebox .inp.sm{padding:7px 9px;font-size:13px}
+.vebox .fld label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.vebox .mb{margin-bottom:6px}
+.vebox .posbar .chip{cursor:pointer;font-size:11.5px;padding:5px 9px}
+.vebox .posbar .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+#vForm{max-width:520px;background:#fff;border-color:var(--red-soft);border-width:2px}
+.vex-edit{margin-top:11px;border-top:1.5px dashed var(--line);padding-top:10px}
+.vex-edit .lb{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .magic{background:var(--jade-soft);border:1.5px dashed #BFE5D6;border-radius:13px;padding:11px 14px;font-size:12.5px;color:#1B7A58;
   font-weight:600;display:flex;gap:9px;align-items:flex-start;margin-top:14px}
-.prev{background:#fff;border:1.5px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);position:sticky;top:80px}
-.prev .pb{padding:16px;max-height:600px;overflow:auto}
+.lb{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.emo-btn{font-size:23px;line-height:1;width:56px;height:44px;padding:0;display:grid;place-items:center}
+.emoall{max-height:52vh;overflow:auto;margin-top:10px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--paper)}
+.emoall .eg{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin:12px 0 7px}
+.emoall .eg:first-child{margin-top:0}
+.emoall .eg span{font-weight:600;text-transform:none;letter-spacing:0}
+.emoall .eq{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:4px}
+.emoall .eq button{height:38px;font-size:21px;line-height:1;border:1.5px solid transparent;border-radius:9px;background:#fff;padding:0}
+.emoall .eq button:hover{border-color:var(--gold);background:var(--gold-soft);transform:scale(1.12)}
 .emopick{display:flex;gap:5px;flex-wrap:wrap}
 .emopick span{width:32px;height:32px;border-radius:9px;background:var(--paper);border:1.5px solid var(--line);display:grid;place-items:center;font-size:17px}
 .emopick span.on{border-color:var(--gold);background:var(--gold-soft)}
@@ -452,7 +473,7 @@ select.inp{cursor:pointer}
    ĐÁP ỨNG MÀN NHỎ
    ========================================================================== */
 @media(max-width:1100px){
-  .edit,.grade{grid-template-columns:1fr}
+  .grade{grid-template-columns:1fr}
   .prev,.gpanel{position:static}
   .gpanel .gb{max-height:none}
 }

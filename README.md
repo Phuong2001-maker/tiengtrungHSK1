@@ -102,6 +102,7 @@ phan-mem/
   css/app.css           toàn bộ bảng kiểu
   js/
     data.js             dữ liệu mẫu: người dùng, giáo trình, bài học, lớp, bài tập, bài nộp, ghi chú
+    emoji.js            1.898 biểu tượng Unicode 15.1, chia 9 nhóm — dùng cho bộ chọn biểu tượng
     store.js            trạng thái + đăng nhập + lưu localStorage + tính điểm, tiến độ
     ui.js               hàm dựng giao diện dùng chung (khung app, bảng, thẻ, hộp thoại, thông báo)
     tts.js              đọc tiếng Trung bằng Web Speech API của trình duyệt
@@ -145,14 +146,43 @@ ROUTES["admin/lop/:kid"] = {
 - Tạo giáo trình, soạn bài (5 tab, có xem trước trực tiếp), sửa lại bài đã thêm,
   đổi thứ tự bài, tạo lớp, thêm học viên, tạo và giao bài tập cho lớp, quản lý học viên.
   Mọi thứ vừa tạo là học viên thấy ngay, không qua bước duyệt hay xuất bản.
+- **Năm phần của bài có kho dữ liệu riêng, không phần nào sinh ra từ phần nào.**
+  Khởi động có bảng thẻ riêng ngay trong tab của nó (`l.warmup`), Từ mới có `l.vocab`,
+  Ôn tập có `l.match` + `l.sentences`, Ngữ pháp có `l.grammar`, Hội thoại có `l.dialogues`.
+  Sửa phần nào chỉ đổi phần đó. Dữ liệu mẫu chép Khởi động từ Từ mới cho khỏi gõ lại,
+  nhưng từ đó hai bên đi đường riêng.
+- **Tab Từ mới nhập từng từ một**: một ô nhập luôn để trắng ở trên (biểu tượng, chữ Hán,
+  phiên âm, Hán Việt, từ loại, nghĩa, câu ví dụ). Bấm **✔ Lưu bài** thì từ xuống danh sách
+  bên dưới và ô nhập trắng lại để gõ từ tiếp theo. Mỗi từ trong danh sách có nút
+  **✏️ Sửa từ này** và **✕** xoá.
+- **Từ loại chọn bằng chip, mỗi loại một chip riêng, chọn được nhiều.** Lưu thành mảng
+  (`pos: ["danh từ 名", "động từ 动"]`) chứ không ghép chuỗi như trước. Hàm `loaiTu()` trong
+  `ui.js` đọc được cả kiểu cũ lẫn kiểu mới nên dữ liệu cũ không cần chuyển đổi.
+- **Âm Hán Việt** ghi đủ chữ và nằm ngay dưới phiên âm — cùng là cách đọc thì để cạnh nhau;
+  hàng chip bên dưới chỉ còn từ loại.
+- **Soạn tới đâu thấy tới đó.** Cả tab Khởi động lẫn tab Từ mới đều có mục
+  *Học viên sẽ thấy như thế này* ngay dưới phần nhập, dựng đúng thẻ của học viên và
+  cập nhật ngay từng phím gõ — không phải bấm lưu rồi mở màn học viên ra kiểm.
+- **Tên bài và nội dung bài tách hẳn nhau.** Tên bài (chữ Hán · phiên âm · tiếng Việt ·
+  Hán Việt · biểu tượng) sửa ở panel *Bài học* trong màn giáo trình, nút **✏️ Tên**.
+  Màn soạn bài (nút **📝 Soạn**) chỉ có 5 tab nội dung — sửa trong đó không đụng tới tên.
+- Màn soạn bài **tự lưu vào `localStorage` ngay khi gõ**, không cần bấm nút. Tab Khởi động
+  dựng đúng thẻ lật mà học viên sẽ thấy: lật được, nghe được.
+- **Bộ chọn biểu tượng 1.898 cái** (`js/emoji.js`), chia 9 nhóm, **tìm bằng tiếng Việt**:
+  gõ `nha`, `mèo`, `cờ việt nam`, `bác sĩ` đều ra. Không cần bỏ dấu cho đúng.
+  Khớp trọn từ để "nha" không lôi cả "nháy mắt" về; chỉ khi không ra gì mới nới sang
+  khớp phần đầu. 1.441/1.898 mục (76%) có từ khoá tiếng Việt, còn lại tìm bằng tên tiếng Anh.
 
 ## Những gì chỉ là giao diện
 
 - **Ghi âm và nộp ảnh**: bấm là hiện trạng thái đã ghi/đã chọn, chưa gọi micro hay máy ảnh thật.
-- **Nhập / xuất Excel**, **đăng nhập Google**, **gửi email / Zalo**: hiện thông báo, chưa nối.
-- **Từ điển tự điền**: dùng bảng rút gọn ~40 từ trong `admin-giaotrinh.js`.
-  Bản chạy thật gọi API tra cứu dựng từ pinyin-data (44.435 chữ), CC-CEDICT (121.175 từ)
-  và emoji Unicode (1.898) — xem mục S-14 trong tài liệu thiết kế.
+- **Nhập / xuất Excel** (còn ở màn Bài đã nộp và Chi tiết lớp), **đăng nhập Google**,
+  **gửi email / Zalo**: hiện thông báo, chưa nối.
+- **Từ điển tự điền phiên âm và Hán Việt**: dùng bảng rút gọn ~40 từ trong
+  `admin-giaotrinh.js`. Gõ 医生 thì tự điền được, gõ 你 thì không. Bản chạy thật cần
+  pinyin-data (44.435 chữ) + CC-CEDICT (121.175 từ) — hai kho này hiện nằm trong
+  `../index.html`, chưa nối sang đây.
+  **Kho biểu tượng thì ngược lại — đã nhúng đủ**: xem `js/emoji.js`.
 - **Điểm danh** ở màn chi tiết lớp là số liệu minh hoạ.
 
 ---

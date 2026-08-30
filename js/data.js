@@ -48,11 +48,11 @@ SEED.courses = [
    Bài 3 có nội dung đầy đủ; các bài khác chỉ có phần đầu (khung).
    -------------------------------------------------------------------------- */
 SEED.lessons = [
-  { id:"l1", courseId:"c1", no:1, zh:"你叫什么名字", py:"Nǐ jiào shénme míngzi", vi:"Bạn tên là gì?",
+  { id:"l1", courseId:"c1", no:1, zh:"你叫什么名字", py:"Nǐ jiào shénme míngzi", vi:"Bạn tên là gì?", hv:"nhĩ khiếu thập ma danh tự", emo:"👋",
     vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
-  { id:"l2", courseId:"c1", no:2, zh:"你是哪国人", py:"Nǐ shì nǎ guó rén", vi:"Bạn là người nước nào?",
+  { id:"l2", courseId:"c1", no:2, zh:"你是哪国人", py:"Nǐ shì nǎ guó rén", vi:"Bạn là người nước nào?", hv:"nhĩ thị na quốc nhân", emo:"🌏",
     vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
-  { id:"l3", courseId:"c1", no:3, zh:"你做什么工作", py:"Nǐ zuò shénme gōngzuò", vi:"Bạn làm nghề gì?",
+  { id:"l3", courseId:"c1", no:3, zh:"你做什么工作", py:"Nǐ zuò shénme gōngzuò", vi:"Bạn làm nghề gì?", hv:"nhĩ tố thập ma công tác", emo:"💼",
     vocab:[
       {hz:"工作",py:"gōngzuò",hv:"công tác",pos:"danh từ 名 · động từ 动",vi:"công việc; làm việc",emo:"💼",ex:{zh:"你做什么工作？",py:"Nǐ zuò shénme gōngzuò?",vi:"Bạn làm nghề gì?"}},
       {hz:"做",py:"zuò",hv:"tố",pos:"động từ 动",vi:"làm",emo:"🔨",ex:{zh:"你做什么？",py:"Nǐ zuò shénme?",vi:"Bạn làm gì?"}},
@@ -167,11 +167,11 @@ SEED.lessons = [
       ]}
     ]
   },
-  { id:"l4", courseId:"c1", no:4, zh:"现在几点", py:"Xiànzài jǐ diǎn", vi:"Bây giờ là mấy giờ?",
+  { id:"l4", courseId:"c1", no:4, zh:"现在几点", py:"Xiànzài jǐ diǎn", vi:"Bây giờ là mấy giờ?", hv:"hiện tại kỷ điểm", emo:"🕐",
     vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
-  { id:"l5", courseId:"c1", no:5, zh:"你家有几口人", py:"Nǐ jiā yǒu jǐ kǒu rén", vi:"Nhà bạn có mấy người?",
+  { id:"l5", courseId:"c1", no:5, zh:"你家有几口人", py:"Nǐ jiā yǒu jǐ kǒu rén", vi:"Nhà bạn có mấy người?", hv:"nhĩ gia hữu kỷ khẩu nhân", emo:"👨‍👩‍👧",
     vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] },
-  { id:"l6", courseId:"c1", no:6, zh:"多少钱", py:"Duōshao qián", vi:"Bao nhiêu tiền?",
+  { id:"l6", courseId:"c1", no:6, zh:"多少钱", py:"Duōshao qián", vi:"Bao nhiêu tiền?", hv:"đa thiểu tiền", emo:"💰",
     vocab:[], extra:[], match:[], sentences:[], grammar:[], dialogues:[] }
 ];
 
@@ -288,6 +288,13 @@ SEED.feedbacks = [
 /* ---------------------------------------------------------------- KHÁC */
 SEED.weakTags = ["Từ vựng nghề nghiệp","Ngữ pháp 是","Ngữ pháp 在…工作","Biến điệu của 不",
                  "Hội thoại","Phát âm thanh điệu","Trật tự từ","Chữ viết tay"];
+
+/* Khởi động có kho thẻ riêng, không dùng chung với Từ mới.
+   Dữ liệu mẫu chép sang cho khỏi phải gõ lại; từ đây hai bên độc lập —
+   sửa bên nào chỉ đổi bên đó. */
+SEED.lessons.forEach(function (l) {
+  l.warmup = JSON.parse(JSON.stringify(l.vocab));
+});
 
 SEED.emojiPool = ["📗","📘","📙","📕","📓","🀄","🏮","🐉","🧧","🎋","✏️","🎓"];
 SEED.colorPool = ["#D6453D","#E9A23B","#2F9E77","#3B6FD4","#8B5CF6"];

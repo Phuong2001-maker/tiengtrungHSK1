@@ -1,6 +1,15 @@
 /* ==========================================================================
    ui.js — hàm dựng giao diện dùng chung
    ========================================================================== */
+/* Từ loại của một từ vựng. Dữ liệu cũ lưu thành chuỗi ghép ("danh từ 名 · động từ 动"),
+   bản mới lưu thành mảng — hàm này đọc được cả hai và luôn trả về mảng.
+   Để ở đây vì cả màn soạn bài lẫn màn học của học viên đều cần. */
+function loaiTu(v) {
+  if (Array.isArray(v.pos)) return v.pos.slice();
+  return String(v.pos || "").split("·").map(function (x) { return x.trim(); })
+    .filter(function (x) { return x; });
+}
+
 var UI = (function () {
 
   /* ------------------------------------------------------------ tiện ích */

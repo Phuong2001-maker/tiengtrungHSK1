@@ -40,6 +40,7 @@ function lessonView(p) {
         : UI.chip("Đã xong " + pr + "/5 phần", "chip-w")) + '</span></div>' +
     '<h1>' + UI.h(l.zh) + '</h1>' +
     '<div style="font-size:20px;font-weight:600;opacity:.95">' + UI.h(l.py) + '</div>' +
+    (l.hv ? '<div style="font-size:14px;margin-top:3px;opacity:.8;font-style:italic">' + UI.h(l.hv) + '</div>' : '') +
     '<div style="font-size:15px;margin-top:6px;opacity:.9">' + UI.h(l.vi) + '</div>' +
     '<div class="row wrap" style="gap:9px;margin-top:14px;font-size:12.5px">' +
       '<span style="background:rgba(0,0,0,.17);padding:5px 12px;border-radius:99px;font-weight:700">🎯 ' + l.vocab.length + ' từ mới</span>' +
@@ -56,9 +57,15 @@ function lessonView(p) {
   var inner = '<div class="sec-head"><div class="sec-num zh">' + T[3] + '</div>' +
     '<div><h2>' + T[4] + '</h2><div class="sub">' + T[5] + '</div></div></div>';
 
-  if (!l.vocab.length) {
-    inner += '<div class="card pad empty">Bài học này chưa có nội dung. ' +
-      (teacher ? '<a href="#/admin/soan-bai/' + l.id + '" class="red b">Soạn bài ngay →</a>' : 'Giáo viên đang soạn.') + '</div>';
+  /* Mỗi phần có kho dữ liệu riêng nên phần này rỗng không có nghĩa phần kia cũng rỗng. */
+  var rong = tab === "warmup" ? !(l.warmup || []).length
+           : tab === "vocab" ? !l.vocab.length
+           : tab === "practice" ? !(l.match.length || l.sentences.length)
+           : tab === "grammar" ? !l.grammar.length
+           : !l.dialogues.length;
+  if (rong) {
+    inner += '<div class="card pad empty">Phần <b>' + T[2] + '</b> của bài này chưa có nội dung. ' +
+      (teacher ? '<a href="#/admin/soan-bai/' + l.id + '" class="red b">Soạn ngay →</a>' : 'Giáo viên đang soạn.') + '</div>';
   } else if (tab === "warmup") inner += viewWarmup(l);
   else if (tab === "vocab") inner += viewVocab(l);
   else if (tab === "practice") inner += viewPractice(l);
@@ -77,10 +84,11 @@ function lessonView(p) {
 
 /* ---------------------------------------------------------------- Khởi động */
 function viewWarmup(l) {
+  var w = l.warmup || [];
   return '<div class="row wrap mb"><button class="btn ghost" id="flipAll">🔄 Lật tất cả</button>' +
     '<label class="chk"><input type="checkbox" data-slow> 🐢 Đọc chậm</label>' +
-    '<span class="right chip jade" id="flipCount">Đã lật 0/' + l.vocab.length + '</span></div>' +
-    '<div class="flip-grid" id="flipGrid">' + l.vocab.map(function (v, i) {
+    '<span class="right chip jade" id="flipCount">Đã lật 0/' + w.length + '</span></div>' +
+    '<div class="flip-grid" id="flipGrid">' + w.map(function (v, i) {
       return '<div class="flip" data-i="' + i + '"><div class="flip-in">' +
         '<div class="face front"><div class="emo">' + (v.emo || "📝") + '</div>' +
         '<div class="hz zh">' + UI.h(v.hz) + '</div><div class="hint">bấm để lật</div></div>' +
@@ -100,8 +108,10 @@ function viewVocab(l) {
     '<div class="vocab-grid" id="vocabGrid">' + l.vocab.map(function (v, i) {
       return '<div class="vcard" data-i="' + i + '"><button class="spk" data-say="' + UI.h(v.hz) + '">🔊</button>' +
         '<div class="vtop"><div class="vemo">' + (v.emo || "📝") + '</div>' +
-        '<div><div class="vhz zh">' + UI.h(v.hz) + '</div><div class="vpy">' + UI.h(v.py) + '</div></div></div>' +
-        '<div class="vtags">' + UI.chip(v.pos, "blue") + UI.chip("HV: " + v.hv, "purple") + '</div>' +
+        '<div style="min-width:0"><div class="vhz zh">' + UI.h(v.hz) + '</div>' +
+        '<div class="vpy">' + UI.h(v.py) + '</div>' +
+        (v.hv ? '<div class="vhv">Hán Việt: <b>' + UI.h(v.hv) + '</b></div>' : '') + '</div></div>' +
+        '<div class="vtags">' + loaiTu(v).map(function (t) { return UI.chip(t, "blue"); }).join('') + '</div>' +
         '<div class="vmean">' + UI.h(v.vi) + '</div>' +
         '<div class="vex"><div class="zh">' + UI.h(v.ex.zh) + '</div>' +
         '<div class="expy">' + UI.h(v.ex.py) + '</div><div class="exvi">' + UI.h(v.ex.vi) + '</div></div></div>';
@@ -212,8 +222,15 @@ function viewDialogue(l) {
 
 /* ---------------------------------------------------------------- gắn sự kiện */
 function lessonInit(root, p) {
-  var l = Store.lesson(p.lid); if (!l || !l.vocab.length) return;
+  var l = Store.lesson(p.lid); if (!l) return;
   var tab = p.tab || "warmup";
+  var warm = l.warmup || [];
+  /* Phần nào rỗng thì màn chỉ có dòng thông báo — không có gì để gắn sự kiện. */
+  if (tab === "warmup"   ? !warm.length
+    : tab === "vocab"    ? !l.vocab.length
+    : tab === "practice" ? !(l.match.length || l.sentences.length)
+    : tab === "grammar"  ? !l.grammar.length
+    :                      !l.dialogues.length) return;
 
   UI.qsa("[data-slow]", root).forEach(function (c) {
     c.checked = TTS.isSlow();
@@ -230,14 +247,16 @@ function lessonInit(root, p) {
         f.classList.toggle("on");
         flipped[f.getAttribute("data-i")] = f.classList.contains("on");
         var n = Object.keys(flipped).filter(function (k) { return flipped[k]; }).length;
-        UI.qs("#flipCount", root).textContent = "Đã lật " + n + "/" + l.vocab.length;
-        if (f.classList.contains("on")) TTS.say(l.vocab[+f.getAttribute("data-i")].hz);
+        UI.qs("#flipCount", root).textContent = "Đã lật " + n + "/" + warm.length;
+        var t = warm[+f.getAttribute("data-i")];
+        if (f.classList.contains("on") && t && t.hz) TTS.say(t.hz);
       };
     });
-    UI.qs("#flipAll", root).onclick = function () {
+    var btnAll = UI.qs("#flipAll", root);
+    if (btnAll) btnAll.onclick = function () {
       var all = UI.qsa(".flip", root), any = all.some(function (f) { return !f.classList.contains("on"); });
       all.forEach(function (f, i) { f.classList.toggle("on", any); flipped[i] = any; });
-      UI.qs("#flipCount", root).textContent = "Đã lật " + (any ? l.vocab.length : 0) + "/" + l.vocab.length;
+      UI.qs("#flipCount", root).textContent = "Đã lật " + (any ? warm.length : 0) + "/" + warm.length;
     };
   }
 
@@ -361,6 +380,8 @@ function initMatch(root, l) {
 
 /* --- trò sắp xếp câu --- */
 function initBuilder(root, l) {
+  /* Bài có phần ghép từ mà chưa có câu nào thì trò này không dựng ra — bỏ qua. */
+  if (!l.sentences.length || !UI.qs("#sbCheck", root)) return;
   var idx = 0, picked = [];
   var line = UI.qs("#sbLine", root), pool = UI.qs("#sbPool", root), fb = UI.qs("#sbFb", root);
 
